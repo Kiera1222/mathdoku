@@ -14,7 +14,7 @@ const io = new Server(server, {
   }
 });
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5002;
 
 // Rooms are stored as: roomId (level-password) -> {players: [], puzzle: {}, gameStarted: false}
 const rooms = new Map();
