@@ -1,86 +1,78 @@
-# Mathdoku - Multiplayer Puzzle Game
+# Mathdoku Multiplayer
 
-Mathdoku is a multiplayer puzzle game where players compete to see who can solve the puzzle faster. The game is similar to KenKen or Calcudoku, requiring players to fill a grid with numbers while following specific rules.
+A multiplayer math puzzle game where players compete to solve Mathdoku puzzles (similar to KenKen/Calcudoku).
 
-## Features
+## Project Structure
 
-- Choose from multiple grid sizes (3x3 to 9x9)
-- No registration required - connect with a friend using a simple password
-- Real-time gameplay with live opponent status
-- Compete to solve the puzzle in the shortest time
-- Beautiful and responsive UI
+```
+mathdoku/
+├── client/         # React frontend
+├── server/         # Node.js backend
+└── package.json    # Root package.json for running both client and server
+```
 
-## Game Rules
+## Prerequisites
 
-1. Fill the grid with numbers 1 through N (where N is the grid size)
-2. Each row and column must contain each number exactly once (like Sudoku)
-3. Each cage (outlined section) has a target number and operation
-4. The numbers in the cage must combine using the specified operation to equal the target number
+- Node.js (v14 or higher)
+- npm (v6 or higher)
 
-For example, a cage with "5+" means the numbers in that cage must add up to 5.
+## Installation
 
-## Tech Stack
-
-- **Frontend**: React
-- **Backend**: Node.js, Express
-- **Real-time Communication**: Socket.IO
-- **Data Storage**: In-memory (for simplicity)
-
-## Setup Instructions
-
-### Prerequisites
-
-- Node.js (v14+ recommended)
-- npm (v6+ recommended)
-
-### Installation
-
-1. Clone the repository
+1. Clone this repository:
    ```
-   git clone https://github.com/yourusername/mathdoku.git
+   git clone <repository-url>
    cd mathdoku
    ```
 
-2. Install dependencies for both client and server
+2. Install dependencies for the root project, client, and server:
    ```
    npm run install-all
    ```
+   
+   Or install them separately:
+   ```
+   npm install
+   cd client && npm install
+   cd ../server && npm install
+   ```
 
-### Running the Application
+## Running the Application
 
-To run both client and server simultaneously:
+From the root directory (`mathdoku`), run:
 
 ```
 npm run dev
 ```
 
-This will start:
-- Frontend at http://localhost:3000
-- Backend at http://localhost:5000
+This will start both the client and server concurrently:
+- Client: http://localhost:3000
+- Server: http://localhost:5002
 
-To run them separately:
+## Game Instructions
 
-```
-npm run client  # For the React frontend
-npm run server  # For the Node.js backend
-```
+1. Select a grid size (3×3 to 9×9)
+2. Enter a game password (this is used to join or create a game room)
+3. Wait for an opponent to join with the same password
+4. Solve the puzzle faster than your opponent to win!
 
-## How to Play
+## Troubleshooting
 
-1. Open the app in your browser at http://localhost:3000
-2. Select a grid size (e.g., 6x6)
-3. Enter a password and share it with your friend
-4. Wait for your friend to join using the same password
-5. The game will start automatically when both players are connected
-6. First player to correctly solve the puzzle wins!
+If you encounter the "address already in use" error when starting the server:
 
-## Future Enhancements
+1. Find the process using the port:
+   ```
+   lsof -i :5002
+   ```
 
-- User accounts and persistent stats
-- Leaderboards
-- More puzzle variants
-- Mobile app version
+2. Kill the process:
+   ```
+   kill -9 <PID>
+   ```
+
+3. Or change the port in:
+   - `server/index.js` (PORT variable)
+   - `client/src/components/GameBoard.js` (SERVER_URL constant)
 
 ## License
 
-ISC 
+[Your license information here] 
