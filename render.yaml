@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: mathdoku
+    env: node
+    plan: free
+    buildCommand: npm run install-all && cd client && npm run build
+    startCommand: cd server && node index.js
+    envVars:
+      - key: PORT
+        value: 10000
+    healthCheckPath: /api/health 

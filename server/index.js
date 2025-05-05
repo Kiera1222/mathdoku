@@ -4,13 +4,19 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const path = require('path');
 const { generatePuzzle } = require('./puzzleGenerator');
+const fs = require('fs');
 
 const app = express();
 app.use(cors());
 app.use(express.json()); // Add JSON body parser
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files from React app - for Render.com deployment
+// Check if we're in production build path or development
+const clientBuildPath = path.resolve(__dirname, '../client/build');
+const publicPath = path.resolve(__dirname, 'public');
+const staticPath = fs.existsSync(clientBuildPath) ? clientBuildPath : publicPath;
+
+app.use(express.static(staticPath));
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -202,7 +208,7 @@ io.on('connection', (socket) => {
 
 // For any routes not handled before, serve the React app
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(staticPath, 'index.html'));
 });
 
 server.listen(PORT, () => {

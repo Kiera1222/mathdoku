@@ -48,47 +48,40 @@ This will start both the client and server concurrently:
 - Client: http://localhost:3000
 - Server: http://localhost:5002
 
-## Deployment on Fly.io
+## Deployment on Render.com
+
+Render.com offers a free tier that allows deploying full-stack applications with their "Blueprint" feature using the render.yaml file.
 
 ### Prerequisites
 
-1. Install the Fly.io CLI:
-   ```
-   curl -L https://fly.io/install.sh | sh
-   ```
-   
-2. Log in to your Fly.io account:
-   ```
-   fly auth login
-   ```
+1. Create a [Render.com](https://render.com) account
 
 ### Deployment Steps
 
-1. Launch your app on Fly.io (first time only):
-   ```
-   fly launch
-   ```
-   This will detect your Dockerfile and create a fly.toml file.
+1. From your Render dashboard, click "New" then "Blueprint"
 
-2. Deploy your app:
-   ```
-   fly deploy
-   ```
+2. Connect your GitHub repository with the Mathdoku code
 
-3. Open your deployed app:
-   ```
-   fly open
-   ```
+3. Render will automatically detect the render.yaml file and set up the services
 
-### Scaling (Optional)
+4. Click "Apply" to start the deployment process
 
-To ensure your app never sleeps and can handle more traffic:
+5. Once deployed, Render will provide a URL to access your application
 
-```
-fly scale count 1
-```
+### Key Benefits of Render.com Free Tier
 
-This keeps at least 1 instance running at all times.
+- Free web service hosting
+- Automatic HTTPS
+- Custom domains
+- Continuous deployment from GitHub
+- No sleep on inactivity for free tier
+
+### Note About Free Plan Limitations
+
+- 750 hours of runtime per month
+- Automatic shutdown after 15 minutes of inactivity (but restarts on next visit)
+- Limited to 512MB RAM
+- Shared CPU usage
 
 ## Game Instructions
 
