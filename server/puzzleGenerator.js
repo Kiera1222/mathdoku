@@ -6,8 +6,19 @@
  * And each cage has a target number that must be reached using the specified operation
  */
 
+// Seeded random number generator for deterministic puzzles
+function createSeededRandom(seed) {
+  // Simple seeded random function
+  let state = Array.from(seed.toString()).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  
+  return function() {
+    state = (state * 9301 + 49297) % 233280;
+    return state / 233280;
+  };
+}
+
 // Generate a valid Latin square (grid where no number repeats in any row or column)
-function generateLatinSquare(size) {
+function generateLatinSquare(size, seededRandom) {
   const grid = Array(size).fill(0).map(() => Array(size).fill(0));
   
   // Fill the first row with sequential numbers 1 to size
@@ -25,7 +36,7 @@ function generateLatinSquare(size) {
   // Randomly shuffle rows and columns to create variety
   // Shuffle rows (except first row)
   for (let i = 1; i < size; i++) {
-    const swapWith = Math.floor(Math.random() * (size - 1)) + 1;
+    const swapWith = Math.floor(seededRandom() * (size - 1)) + 1;
     if (i !== swapWith) {
       [grid[i], grid[swapWith]] = [grid[swapWith], grid[i]];
     }
@@ -33,7 +44,7 @@ function generateLatinSquare(size) {
   
   // Shuffle columns
   for (let j = 0; j < size; j++) {
-    const swapWith = Math.floor(Math.random() * size);
+    const swapWith = Math.floor(seededRandom() * size);
     if (j !== swapWith) {
       for (let i = 0; i < size; i++) {
         [grid[i][j], grid[i][swapWith]] = [grid[i][swapWith], grid[i][j]];
@@ -45,7 +56,7 @@ function generateLatinSquare(size) {
 }
 
 // Create cages for the puzzle
-function generateCages(size, grid) {
+function generateCages(size, grid, seededRandom) {
   // Start with each cell in its own cage
   let cages = [];
   let cageId = 1;
@@ -74,8 +85,8 @@ function generateCages(size, grid) {
   
   for (let m = 0; m < numMerges; m++) {
     // Find a random cell
-    const randomRow = Math.floor(Math.random() * size);
-    const randomCol = Math.floor(Math.random() * size);
+    const randomRow = Math.floor(seededRandom() * size);
+    const randomCol = Math.floor(seededRandom() * size);
     const currentCageId = cellToCage[randomRow][randomCol];
     
     // Find a neighboring cell
@@ -87,7 +98,7 @@ function generateCages(size, grid) {
     
     if (neighbors.length === 0) continue;
     
-    const neighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
+    const neighbor = neighbors[Math.floor(seededRandom() * neighbors.length)];
     const neighborCageId = cellToCage[neighbor.row][neighbor.col];
     
     // Skip if already in the same cage
@@ -105,7 +116,7 @@ function generateCages(size, grid) {
     
     // Assign an operation and calculate target number
     const operations = ['add', 'subtract', 'multiply', 'divide'];
-    let operation = operations[Math.floor(Math.random() * operations.length)];
+    let operation = operations[Math.floor(seededRandom() * operations.length)];
     let targetNumber;
     
     // Get cell values from the grid
@@ -114,7 +125,7 @@ function generateCages(size, grid) {
     // For smaller cages (2 cells), allow all operations
     // For larger cages, only use addition or multiplication
     if (mergedCells.length > 2 && (operation === 'subtract' || operation === 'divide')) {
-      operation = Math.random() < 0.5 ? 'add' : 'multiply';
+      operation = seededRandom() < 0.5 ? 'add' : 'multiply';
     }
     
     // Calculate the target number based on the operation
@@ -172,18 +183,23 @@ function generateCages(size, grid) {
   return cages;
 }
 
-// Generate a complete Mathdoku puzzle
-function generatePuzzle(size) {
+// Generate a complete Mathdoku puzzle with optional password seed
+function generatePuzzle(size, password = '') {
   // Validate size
   if (size < 3 || size > 9) {
     throw new Error('Puzzle size must be between 3 and 9');
   }
   
+  // Create seeded random generator if password provided
+  const seededRandom = password 
+    ? createSeededRandom(password + size) // Add size to make puzzles differ by size
+    : Math.random;
+  
   // Generate the solution grid (Latin square)
-  const solutionGrid = generateLatinSquare(size);
+  const solutionGrid = generateLatinSquare(size, seededRandom);
   
   // Generate cages with operations and target numbers
-  const cages = generateCages(size, solutionGrid);
+  const cages = generateCages(size, solutionGrid, seededRandom);
   
   // Convert to client-friendly format
   const formattedCages = cages.map(cage => ({
@@ -201,8 +217,8 @@ function generatePuzzle(size) {
 }
 
 // Create a simple puzzle for testing
-function createSimplePuzzle(size) {
-  const puzzle = generatePuzzle(size);
+function createSimplePuzzle(size, password = '') {
+  const puzzle = generatePuzzle(size, password);
   return puzzle;
 }
 

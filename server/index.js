@@ -6,6 +6,8 @@ const { generatePuzzle } = require('./puzzleGenerator');
 
 const app = express();
 app.use(cors());
+app.use(express.json()); // Add JSON body parser
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -18,6 +20,45 @@ const PORT = process.env.PORT || 5001;
 
 // Rooms are stored as: roomId (level-password) -> {players: [], puzzle: {}, gameStarted: false}
 const rooms = new Map();
+
+// Cache for password-based puzzles (non-multiplayer)
+const puzzleCache = new Map();
+
+// Endpoint to get a puzzle based on size and password (for single-player mode)
+app.post('/api/puzzle', (req, res) => {
+  const { size, password } = req.body;
+  
+  if (!size || size < 3 || size > 9) {
+    return res.status(400).json({ error: 'Invalid size. Must be between 3 and 9.' });
+  }
+  
+  if (!password) {
+    return res.status(400).json({ error: 'Password is required.' });
+  }
+  
+  // Create a unique cache key
+  const cacheKey = `${size}-${password}`;
+  
+  // Check if puzzle is already in cache
+  if (puzzleCache.has(cacheKey)) {
+    return res.json(puzzleCache.get(cacheKey));
+  }
+  
+  // Generate new puzzle with password as seed
+  const puzzle = generatePuzzle(size, password);
+  
+  // Store in cache
+  puzzleCache.set(cacheKey, puzzle);
+  
+  // Clean up cache after some time to prevent memory leaks
+  setTimeout(() => {
+    if (puzzleCache.has(cacheKey)) {
+      puzzleCache.delete(cacheKey);
+    }
+  }, 24 * 60 * 60 * 1000); // 24 hours
+  
+  res.json(puzzle);
+});
 
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
@@ -52,7 +93,7 @@ io.on('connection', (socket) => {
         
         // Generate puzzle if not already generated
         if (!room.puzzle) {
-          room.puzzle = generatePuzzle(parseInt(level));
+          room.puzzle = generatePuzzle(parseInt(level), password);
         }
         
         // Start the game
