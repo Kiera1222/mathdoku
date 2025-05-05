@@ -78,26 +78,46 @@ app.get('/api/health', (req, res) => {
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
 
-  // Player joins a game
+  // Player creates a new game
+  socket.on('create_game', ({ level, password }) => {
+    const roomId = `${level}-${password}`;
+    
+    // Check if room already exists
+    if (rooms.has(roomId)) {
+      socket.emit('game_already_exists');
+      console.log(`Player ${socket.id} tried to create room ${roomId} but it already exists.`);
+      return;
+    }
+    
+    // Create a new room
+    rooms.set(roomId, {
+      players: [{ id: socket.id, ready: false, completed: false, time: null }],
+      puzzle: null,
+      gameStarted: false,
+      level,
+      creator: socket.id
+    });
+    
+    socket.join(roomId);
+    socket.emit('waiting_for_opponent', { roomId });
+    console.log(`Player ${socket.id} created room ${roomId}`);
+  });
+
+  // Player joins an existing game
   socket.on('join_game', ({ level, password }) => {
     const roomId = `${level}-${password}`;
     
-    // If room doesn't exist, create it
+    // If room doesn't exist, notify the user
     if (!rooms.has(roomId)) {
-      rooms.set(roomId, {
-        players: [{ id: socket.id, ready: false, completed: false, time: null }],
-        puzzle: null,
-        gameStarted: false,
-        level
-      });
-      socket.join(roomId);
-      socket.emit('waiting_for_opponent', { roomId });
-      console.log(`Player ${socket.id} created room ${roomId}`);
-    } 
+      socket.emit('game_not_found');
+      console.log(`Player ${socket.id} tried to join non-existent room ${roomId}`);
+      return;
+    }
+    
+    const room = rooms.get(roomId);
+    
     // If room exists but has only one player
-    else if (rooms.get(roomId).players.length === 1) {
-      const room = rooms.get(roomId);
-      
+    if (room.players.length === 1) {
       // Check if this player is already in the room (reconnection)
       const existingPlayerIndex = room.players.findIndex(p => p.id === socket.id);
       
@@ -136,9 +156,7 @@ io.on('connection', (socket) => {
       }
     }
     // Room is full
-    else if (rooms.get(roomId).players.length >= 2) {
-      const room = rooms.get(roomId);
-      
+    else if (room.players.length >= 2) {
       // Check if this is a reconnection
       const existingPlayerIndex = room.players.findIndex(p => p.id === socket.id);
       if (existingPlayerIndex !== -1) {

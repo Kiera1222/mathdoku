@@ -6,7 +6,7 @@ const SERVER_URL = process.env.NODE_ENV === 'production'
   ? '' // Use relative URL in production
   : 'http://localhost:8080'; // Use explicit URL in development
 
-const GameBoard = ({ level, password, onCancel }) => {
+const GameBoard = ({ level, password, onCancel, isCreator = true }) => {
   const [socket, setSocket] = useState(null);
   const [gameState, setGameState] = useState('connecting');
   const [puzzle, setPuzzle] = useState(null);
@@ -17,6 +17,7 @@ const GameBoard = ({ level, password, onCancel }) => {
   const [opponentCompleted, setOpponentCompleted] = useState(false);
   const [gameResults, setGameResults] = useState(null);
   const [selectedCell, setSelectedCell] = useState(null);
+  const [error, setError] = useState(null);
 
   const checkCompletion = useCallback((currentSolution) => {
     if (!puzzle) return;
@@ -74,7 +75,13 @@ const GameBoard = ({ level, password, onCancel }) => {
     // Set up event listeners
     newSocket.on('connect', () => {
       console.log('Connected to server');
-      newSocket.emit('join_game', { level, password });
+      
+      // Different events based on whether we're creating or joining
+      if (isCreator) {
+        newSocket.emit('create_game', { level, password });
+      } else {
+        newSocket.emit('join_game', { level, password });
+      }
     });
 
     newSocket.on('waiting_for_opponent', ({ roomId }) => {
@@ -106,11 +113,21 @@ const GameBoard = ({ level, password, onCancel }) => {
       setGameState('room_full');
     });
 
+    newSocket.on('game_not_found', () => {
+      setError('Game not found. Please check the password and try again.');
+      setGameState('error');
+    });
+
+    newSocket.on('game_already_exists', () => {
+      setError('A game with this password already exists. Please choose a different password.');
+      setGameState('error');
+    });
+
     // Clean up on component unmount
     return () => {
       newSocket.disconnect();
     };
-  }, [level, password]);
+  }, [level, password, isCreator]);
   
   // Handle keyboard input for the selected cell
   useEffect(() => {
@@ -152,7 +169,14 @@ const GameBoard = ({ level, password, onCancel }) => {
       case 'connecting':
         return <div>Connecting to server...</div>;
       case 'waiting':
-        return <div>Waiting for opponent to join...</div>;
+        return (
+          <div className="waiting-info">
+            <h2>Waiting for opponent to join...</h2>
+            <p>Share this password with your opponent:</p>
+            <div className="password-display">{password}</div>
+            <p>They need to select "Join Game" and enter this password.</p>
+          </div>
+        );
       case 'playing':
         return renderPuzzle();
       case 'completed':
@@ -169,6 +193,8 @@ const GameBoard = ({ level, password, onCancel }) => {
         return <div>Your opponent has disconnected.</div>;
       case 'room_full':
         return <div>The room is full. Please try a different password.</div>;
+      case 'error':
+        return <div className="error-message">{error}</div>;
       default:
         return <div>Unknown game state.</div>;
     }

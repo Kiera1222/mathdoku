@@ -8,6 +8,7 @@ function App() {
   const [level, setLevel] = useState(3);
   const [password, setPassword] = useState('');
   const [gameMode, setGameMode] = useState('solo'); // 'solo' or 'multi'
+  const [multiplayerAction, setMultiplayerAction] = useState('create'); // 'create' or 'join'
 
   const handleStartGame = (e) => {
     e.preventDefault();
@@ -46,26 +47,53 @@ function App() {
               </div>
             </div>
 
-            <div className="form-group">
-              <label>Select Grid Size:</label>
-              <div className="grid-size-options">
-                {[3, 4, 5, 6, 7, 8, 9].map((size) => (
+            {gameMode === 'multi' && (
+              <div className="form-group">
+                <label>Multiplayer Option:</label>
+                <div className="game-mode-options">
                   <button
-                    key={size}
                     type="button"
-                    className={`grid-size-button ${level === size ? 'selected' : ''}`}
-                    onClick={() => setLevel(size)}
+                    className={`game-mode-button ${multiplayerAction === 'create' ? 'selected' : ''}`}
+                    onClick={() => setMultiplayerAction('create')}
                   >
-                    {size}×{size}
+                    Create Game
                   </button>
-                ))}
+                  <button
+                    type="button"
+                    className={`game-mode-button ${multiplayerAction === 'join' ? 'selected' : ''}`}
+                    onClick={() => setMultiplayerAction('join')}
+                  >
+                    Join Game
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
+
+            {(gameMode === 'solo' || (gameMode === 'multi' && multiplayerAction === 'create')) && (
+              <div className="form-group">
+                <label>Select Grid Size:</label>
+                <div className="grid-size-options">
+                  {[3, 4, 5, 6, 7, 8, 9].map((size) => (
+                    <button
+                      key={size}
+                      type="button"
+                      className={`grid-size-button ${level === size ? 'selected' : ''}`}
+                      onClick={() => setLevel(size)}
+                    >
+                      {size}×{size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="form-group">
               <label>
                 {gameMode === 'solo' 
                   ? 'Custom Password (for shared puzzles):' 
-                  : 'Game Password:'}
+                  : multiplayerAction === 'create'
+                    ? 'Create Game Password:'
+                    : 'Enter Game Password:'}
               </label>
               <input 
                 type="text" 
@@ -73,7 +101,9 @@ function App() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={gameMode === 'solo' 
                   ? "Share this password with friends to get the same puzzle"
-                  : "Enter a password to create or join a game"}
+                  : multiplayerAction === 'create'
+                    ? "Create a unique password for your game"
+                    : "Enter the password to join a game"}
                 required
               />
               {gameMode === 'solo' && (
@@ -81,9 +111,19 @@ function App() {
                   Anyone using the same password and grid size will get an identical puzzle.
                 </p>
               )}
+              {gameMode === 'multi' && multiplayerAction === 'create' && (
+                <p className="help-text">
+                  Share this password with an opponent to let them join your game.
+                </p>
+              )}
             </div>
+            
             <button type="submit" className="start-button">
-              {gameMode === 'solo' ? 'Start Puzzle' : 'Start Game'}
+              {gameMode === 'solo' 
+                ? 'Start Puzzle' 
+                : multiplayerAction === 'create'
+                  ? 'Create Game'
+                  : 'Join Game'}
             </button>
           </form>
         </div>
@@ -91,7 +131,12 @@ function App() {
         gameMode === 'solo' ? (
           <SoloPuzzle level={level} password={password} onCancel={handleCancel} />
         ) : (
-          <GameBoard level={level} password={password} onCancel={handleCancel} />
+          <GameBoard 
+            level={level} 
+            password={password} 
+            onCancel={handleCancel} 
+            isCreator={multiplayerAction === 'create'}
+          />
         )
       )}
     </div>
