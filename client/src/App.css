@@ -149,6 +149,69 @@
   margin-top: 20px;
 }
 
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.puzzle-info {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 10px;
+}
+
+.puzzle-cell {
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
+
+.puzzle-cell:hover {
+  background-color: #f0f7fa !important;
+}
+
+.puzzle-cell.selected {
+  background-color: #e0f7fa !important;
+  box-shadow: 0 0 5px rgba(33, 150, 243, 0.5);
+}
+
+.number-controls {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+}
+
+.number-button {
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.number-button:hover {
+  background-color: #e0e0e0;
+}
+
+.clear-button {
+  background-color: #ff9800;
+  color: white;
+  border: 1px solid #ff9800;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.clear-button:hover {
+  background-color: #f57c00;
+}
+
 .share-info {
   background-color: #f5f5f5;
   border-radius: 4px;

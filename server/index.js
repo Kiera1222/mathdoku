@@ -120,11 +120,21 @@ io.on('connection', (socket) => {
         socket.join(roomId);
         if (room.gameStarted) {
           socket.emit('start_game', { puzzle: room.puzzle });
+          
+          // Check if the other player has completed the puzzle
+          const otherPlayer = room.players.find(p => p.id !== socket.id);
+          if (otherPlayer && otherPlayer.completed) {
+            socket.emit('player_completed', { 
+              playerId: otherPlayer.id,
+              time: otherPlayer.time,
+              allCompleted: false
+            });
+          }
         } else {
           socket.emit('waiting_for_opponent', { roomId });
         }
       }
-    } 
+    }
     // Room is full
     else if (rooms.get(roomId).players.length >= 2) {
       const room = rooms.get(roomId);
@@ -135,6 +145,16 @@ io.on('connection', (socket) => {
         socket.join(roomId);
         if (room.gameStarted) {
           socket.emit('start_game', { puzzle: room.puzzle });
+          
+          // Check if the other player has completed the puzzle
+          const otherPlayer = room.players.find(p => p.id !== socket.id);
+          if (otherPlayer && otherPlayer.completed) {
+            socket.emit('player_completed', { 
+              playerId: otherPlayer.id,
+              time: otherPlayer.time,
+              allCompleted: room.players[existingPlayerIndex].completed // Check if both completed
+            });
+          }
         }
       } else {
         socket.emit('room_full');
