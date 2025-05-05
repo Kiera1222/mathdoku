@@ -2,11 +2,15 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const path = require('path');
 const { generatePuzzle } = require('./puzzleGenerator');
 
 const app = express();
 app.use(cors());
 app.use(express.json()); // Add JSON body parser
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, 'public')));
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -16,7 +20,7 @@ const io = new Server(server, {
   }
 });
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 8080;
 
 // Rooms are stored as: roomId (level-password) -> {players: [], puzzle: {}, gameStarted: false}
 const rooms = new Map();
@@ -58,6 +62,11 @@ app.post('/api/puzzle', (req, res) => {
   }, 24 * 60 * 60 * 1000); // 24 hours
   
   res.json(puzzle);
+});
+
+// Health check endpoint for Fly.io
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
 });
 
 io.on('connection', (socket) => {
@@ -191,8 +200,9 @@ io.on('connection', (socket) => {
   });
 });
 
-app.get('/', (req, res) => {
-  res.send('Mathdoku Game Server');
+// For any routes not handled before, serve the React app
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 server.listen(PORT, () => {

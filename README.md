@@ -48,6 +48,48 @@ This will start both the client and server concurrently:
 - Client: http://localhost:3000
 - Server: http://localhost:5002
 
+## Deployment on Fly.io
+
+### Prerequisites
+
+1. Install the Fly.io CLI:
+   ```
+   curl -L https://fly.io/install.sh | sh
+   ```
+   
+2. Log in to your Fly.io account:
+   ```
+   fly auth login
+   ```
+
+### Deployment Steps
+
+1. Launch your app on Fly.io (first time only):
+   ```
+   fly launch
+   ```
+   This will detect your Dockerfile and create a fly.toml file.
+
+2. Deploy your app:
+   ```
+   fly deploy
+   ```
+
+3. Open your deployed app:
+   ```
+   fly open
+   ```
+
+### Scaling (Optional)
+
+To ensure your app never sleeps and can handle more traffic:
+
+```
+fly scale count 1
+```
+
+This keeps at least 1 instance running at all times.
+
 ## Game Instructions
 
 1. Select a grid size (3×3 to 9×9)

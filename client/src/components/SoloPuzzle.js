@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import '../PuzzleStyles.css';
 
-const SERVER_URL = 'http://localhost:5001';
+// Use relative paths for API calls when deployed
+const SERVER_URL = '';
 
 const SoloPuzzle = ({ level, password, onCancel }) => {
   const [loading, setLoading] = useState(true);

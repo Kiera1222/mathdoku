@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
-const SERVER_URL = 'http://localhost:5002';
+// Use relative URL for Socket.io connection (was http://localhost:5001)
+const SERVER_URL = '';
 
 const GameBoard = ({ level, password, onCancel }) => {
   const [socket, setSocket] = useState(null);
